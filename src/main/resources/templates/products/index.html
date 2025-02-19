@@ -2,21 +2,21 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <!-- Bootstrap CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-          rel="stylesheet" 
-          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
-          crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Products List</title>
 </head>
 
 <body>
     <div class="m-2">
-        <h1 class="text-success text-center">
-  Students List
-        </h1>
-        <p class="text-center">
-            <a class="btn btn-primary" href="/products/create">Add Product</a>
-        </p>
+        <h1 class="text-success text-center">Students List</h1>
+        <div class="text-center">
+            <a class="btn btn-primary float-end mb-3" href="/products/create">Add Product</a>
+        </div>
+        <div class="text-center">
+            <input class="form-control w-50" type="text" placeholder="Search by name" id="search" />
+        </div>
+
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
@@ -30,7 +30,7 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody class="table-group-divider">
+            <tbody class="table-group-divider" id="productTableBody">
                 <tr th:each="product : ${products}">
                     <td th:text="${product.id}"></td>
                     <td th:text="${product.name}"></td>
@@ -43,14 +43,67 @@
                     <td th:text="${product.price}"></td>
                     <td>
                         <a class="btn btn-primary" th:href="@{/products/edit(id=${product.id})}">Edit</a>
-                        <a class="btn btn-danger" onclick="return confirm('Are you sure?')" th:href="@{/products/delete(id=${product.id})}">Delete</a>
+                        <a class="btn btn-danger" onclick="return confirm('Are you sure?')"
+                            th:href="@{/products/delete(id=${product.id})}">Delete</a>
                     </td>
+                </tr>
             </tbody>
         </table>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-            crossorigin="anonymous"></script>
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const $tableBody = $('#productTableBody');
+            $('#search').on('input', function () {
+                var query = $(this).val();
+
+                $.ajax({
+                    url: '/products/search',
+                    type: 'GET',
+                    data: {
+                        keyword: query
+                    },
+                    success: function (data) {
+                        $tableBody.empty();
+
+                        if (data.length > 0) {
+                            data.forEach(function (product) {
+                                $tableBody.append(`
+                                    <tr>
+                                        <td>${product.id}</td>
+                                        <td>${product.name}</td>
+                                        <td>${product.brand}</td>
+                                        <td>${product.category}</td>
+                                        <td>${product.description}</td>
+                                        <td>
+                                            <img src="/images/${product.imageFileName}" width="100" height="100" />
+                                        </td>
+                                        <td>${product.price}</td>
+                                        <td>  
+                                            <a class="btn btn-primary" href="/products/edit/${product.id}">Edit</a>
+
+                                            <a class="btn btn-danger" onclick="return confirm('Are you sure?')" href="/products/delete/${product.id}">Delete</a>
+                                        </td>
+                                    </tr>
+                                `);
+                            });
+                        } else {
+                            $tableBody.append(`
+                                <tr>
+                                    <td class="text-center" colspan="9">No products found</td>
+                                </tr>
+                            `);
+
+                        } 
+                    }
+                });
+            });
+        });
+
+    </script>    
 </body>
 
 </html>
